@@ -45,3 +45,5 @@ class LiveFrame(BaseModel):
     total_blinks_this_session: int
     active_seconds: int      # session elapsed time
     break_due: bool          # 20+ minutes since last break
+    calibrating: bool = False          # currently running auto-calibration
+    calibration_progress: float = 1.0  # 0.0 to 1.0 during calibration

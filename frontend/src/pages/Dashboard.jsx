@@ -25,6 +25,8 @@ export default function Dashboard() {
   const sessionId = data?.session_id
   const activeSeconds = data?.active_seconds ?? 0
   const breakDue = data?.break_due ?? false
+  const calibrating = data?.calibrating ?? false
+  const calibrationProgress = data?.calibration_progress ?? 1.0
 
   const handleBreakComplete = async () => {
     try {
@@ -45,6 +47,20 @@ export default function Dashboard() {
           <div className="status-note">No face detected — sit in view of the camera</div>
         )}
       </div>
+
+      {calibrating && (
+        <div className="calibration-banner">
+          <div className="calibration-bar">
+            <div
+              className="calibration-fill"
+              style={{ width: `${calibrationProgress * 100}%` }}
+            />
+          </div>
+          <p>
+            Calibrating to your eyes — sit normally for {Math.ceil((1 - calibrationProgress) * 60)}s
+          </p>
+        </div>
+      )}
 
       {breakDue && sessionId && (
         <BreakPrompt onComplete={handleBreakComplete} />
@@ -73,8 +89,8 @@ export default function Dashboard() {
             blinkRate >= 12 && blinkRate <= 22
               ? 'Healthy range'
               : blinkRate < 12
-              ? 'Low — possible strain'
-              : 'High — possible fatigue'
+                ? 'Low — possible strain'
+                : 'High — possible fatigue'
           }
           accent={healthyBlinkAccent(blinkRate)}
         />
@@ -92,10 +108,10 @@ export default function Dashboard() {
             !distance
               ? 'Calibrating'
               : distance < 40
-              ? 'Too close'
-              : distance > 80
-              ? 'Very far'
-              : 'Good'
+                ? 'Too close'
+                : distance > 80
+                  ? 'Very far'
+                  : 'Good'
           }
         />
         <MetricCard
@@ -104,7 +120,7 @@ export default function Dashboard() {
           sub={sessionId ? `Session #${sessionId}` : 'No active session'}
         />
       </div>
- 
+
       <div className="dashboard-note">
         <div className="section-label">How Screyn works</div>
         <p>
@@ -117,4 +133,3 @@ export default function Dashboard() {
     </div>
   )
 }
- 

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+
+# Node
+node_modules/
+dist/
+
+# Local data
+*.db
+*.sqlite
+calibration.json
+
+# MediaPipe model (auto-downloads on first run)
+backend/models/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

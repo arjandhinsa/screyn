@@ -333,3 +333,33 @@
   min-width: 100px;
   text-align: center;
 }
+
+/* Calibration banner */
+
+.calibration-banner {
+  background: rgba(74, 159, 232, 0.08);
+  border: 1px solid rgba(74, 159, 232, 0.25);
+  border-radius: 12px;
+  padding: 16px 20px;
+  animation: slideDown 0.4s ease;
+}
+
+.calibration-banner p {
+  font-size: 13px;
+  color: var(--accent);
+  margin-top: 10px;
+}
+
+.calibration-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.calibration-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 1s ease;
+}

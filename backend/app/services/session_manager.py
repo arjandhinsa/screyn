@@ -22,6 +22,7 @@ from app.services.blink_detector import BlinkDetector
 from app.services.camera import camera
 from app.services.cv_pipeline import CVPipeline
 from app.services.focus_scorer import FocusInputs, FocusSmoother, compute_focus_score
+from app.services.calibration import calibrator
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,15 @@ class SessionManager:
             logger.error("SessionManager could not start camera")
             return
         self._pipeline = CVPipeline()
+        # Auto-calibrate on first launch if no existing calibration
+        existing = calibrator.load_existing()
+        if existing:
+            settings.ear_threshold = existing.threshold
+            self._blink_detector.ear_threshold = existing.threshold
+            logger.info(f"Loaded calibration: threshold={existing.threshold}")
+        else:
+            calibrator.start()
+            logger.info("No calibration found — starting auto-calibration")
         self._last_break_time = time.time()
         self._running = True
         self._cv_task = asyncio.create_task(self._cv_loop())
@@ -128,6 +138,19 @@ class SessionManager:
                     # Active seconds = time since session start
                     if self._session_started_at:
                         self._active_seconds = now - self._session_started_at
+
+
+                    # Feed calibrator if running
+                    if calibrator.is_running:
+                        avg_ear = (features.left_ear + features.right_ear) / 2.0
+                        calibrator.feed(avg_ear)
+                    elif calibrator.is_complete and calibrator.result:
+                        # Apply calibrated threshold once
+                        new_thresh = calibrator.result.threshold
+                        if self._blink_detector.ear_threshold != new_thresh:
+                            self._blink_detector.ear_threshold = new_thresh
+                            settings.ear_threshold = new_thresh
+                            logger.info(f"Applied calibrated threshold: {new_thresh}")
 
                     self._blink_detector.process(features.left_ear, features.right_ear, now)
 
@@ -217,6 +240,8 @@ class SessionManager:
             total_blinks_this_session=self._blink_detector.get_total_blinks(),
             active_seconds=int(self._active_seconds),
             break_due=break_due,
+            calibrating=calibrator.is_running,
+            calibration_progress=round(calibrator.progress, 2),
         )
         self._latest_live_frame = live
         await self._broadcast(live)
